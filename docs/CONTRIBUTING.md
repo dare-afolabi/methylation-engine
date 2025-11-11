@@ -14,7 +14,7 @@ Thank you for considering contributing to the Differential Methylation Pipeline!
 
 ### 2. Suggest Features
 
-- Open a [Discussion](https://github.com/dare-afolabi/methylation-engine/discussions/) first
+- Open a [Discussion](https://github.com/discussions/) first
 - Explain use case and benefits
 - Consider implementation complexity
 

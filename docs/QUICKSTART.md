@@ -312,7 +312,7 @@ plot_pvalue_qq(results)
 ## Getting Help
 
 - **Issues**: [https://github.com/dare-afolabi/methylation-engine/issues](https://github.com/dare-afolabi/methylation-engine/issues)
-- **Discussions**: [https://github.com/dare-afolabi/methylation-engine/discussions](https://github.com/dare-afolabi/methylation-engine/discussions)
+- **Discussions**: [https://github.com/discussions](https://github.com/discussions)
 - **Email**: [dare.afolabi@outlook.com](mailto:dare.afolabi@outlook.com)
 
 ## Citation

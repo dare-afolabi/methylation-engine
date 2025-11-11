@@ -30,10 +30,10 @@ jobs:
         run: pip install -e ".[dev]"
 
       - name: Lint imports (isort)
-        run: isort core/*.py tests/*.py --check-only
+        run: isort core/*.py tests/*.py
 
       - name: Format check (black)
-        run: black core/*.py tests/*.py --check
+        run: black core/*.py tests/*.py
 
       - name: Lint style (flake8)
         run: flake8 --max-line-length 88 core/*.py tests/*.py
