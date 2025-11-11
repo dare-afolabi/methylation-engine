@@ -688,39 +688,58 @@ def filter_cpgs_by_missingness(
     
 
 def impute_missing_values_fast(
-    M: pd.DataFrame, method: str = "knn", k: int = 5
+    M: pd.DataFrame,
+    method: str = "mean",
+    k: int = 5,
+    use_sample_knn: bool = False
 ) -> pd.DataFrame:
     """
-    Impute missing M-values efficiently.
+    Fast imputation for methylation matrices (CpGs x samples).
 
     Parameters
     ----------
     M : pd.DataFrame
         CpG x samples matrix with missing values
     method : str
-        Imputation method: 'knn', 'mean', 'median'
+        'mean', 'median', or 'knn'
     k : int
-        Number of neighbors for KNN imputation
+        Number of neighbors for KNN
+    use_sample_knn : bool
+        If True, performs KNN across samples (fast if samples << CpGs)
 
     Returns
     -------
     pd.DataFrame
-        Imputed matrix
+        Fully imputed matrix
     """
     M_copy = M.copy()
 
-    if method == "mean":
-        mean_per_cpg = M_copy.mean(axis=1, skipna=True)
-        return M_copy.fillna(mean_per_cpg, axis =0)
-    elif method == "median":
-        median_per_cpg = M_copy.median(axis=1, skipna=True)
-        return M_copy.fillna(median_per_cpg, axis =0)
+    if method in ("mean", "median"):
+        # Row-wise fast imputation using numpy
+        if method == "mean":
+            fill_values = np.nanmean(M_copy.values, axis=1)
+        else:
+            fill_values = np.nanmedian(M_copy.values, axis=1)
+        
+        # Broadcast fill_values to match shape and fill NaNs
+        mask = np.isnan(M_copy.values)
+        M_copy.values[mask] = np.take(fill_values, np.where(mask)[0])
+        return M_copy
+
     elif method == "knn":
-        imputer = KNNImputer(n_neighbors=k, weights="distance")
-        M_imputed = imputer.fit_transform(M_copy)
-        return pd.DataFrame(M_imputed, index=M_copy.index, columns=M_copy.columns)
+        if use_sample_knn:
+            # KNN across samples (columns) - fast for hundreds of samples
+            M_filled = M_copy.T  # now samples x CpGs
+            imputer = KNNImputer(n_neighbors=k, weights="distance")
+            M_imputed = imputer.fit_transform(M_filled)
+            return pd.DataFrame(M_imputed.T, index=M_copy.index, columns=M_copy.columns)
+        else:
+            # Naive row-wise KNN (slow for >100k rows)
+            imputer = KNNImputer(n_neighbors=k, weights="distance")
+            M_imputed = imputer.fit_transform(M_copy)
+            return pd.DataFrame(M_imputed, index=M_copy.index, columns=M_copy.columns)
     else:
-        raise ValueError(f"Unknown imputation method: {method}")
+        raise ValueError(f"Unknown method: {method}")
 
 
 def filter_min_per_group(
@@ -749,24 +768,33 @@ def filter_min_per_group(
     pd.DataFrame
         Subset of M that passes the filter
     """
-    M = M.copy()
     groups = groups.loc[M.columns]
-    kept = []
-
-    for cpg in M.index:
-        row = M.loc[cpg]
-        counts = {g: (~row[groups == g].isna()).sum() for g in groups.unique()}
-        if all(c >= min_per_group for c in counts.values()):
-            kept.append(cpg)
-
+    
+    # Create boolean mask of non-missing values
+    not_missing = ~M.isna()
+    
+    # Count non-missing values per group for each CpG
+    # This is vectorized across all CpGs at once
+    counts_per_group = {}
+    for group_label in groups.unique():
+        group_mask = groups == group_label
+        counts_per_group[group_label] = not_missing.loc[:, group_mask].sum(axis=1)
+    
+    # Convert to DataFrame for easy filtering
+    counts_df = pd.DataFrame(counts_per_group)
+    
+    # Keep CpGs where ALL groups have >= min_per_group observations
+    keep_mask = (counts_df >= min_per_group).all(axis=1)
+    
     if verbose:
-        removed = len(M) - len(kept)
+        n_kept = keep_mask.sum()
+        n_removed = len(M) - n_kept
         print(
-            f"filter_min_per_group: kept {len(kept):,} / {len(M):,} "
-            f"CpGs (removed {removed:,} with <{min_per_group} obs per group)"
+            f"filter_min_per_group: kept {n_kept:,} / {len(M):,} "
+            f"CpGs (removed {n_removed:,} with <{min_per_group} obs per group)"
         )
-
-    return M.loc[kept]
+    
+    return M.loc[keep_mask]
 
 
 # ============================================================================

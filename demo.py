@@ -167,16 +167,15 @@ if M_df_imputed.isna().mean().mean() > 0.15:
         "- **!** High residual missingness (>15%); consider stricter filtering."
     )
 
-# Filter again
-M_ready, _, _ = filter_cpgs_by_missingness(
+# Filter per-group counts
+M_ready = filter_min_per_group(
     M_df_imputed,
-    max_missing_rate=0,
-    min_samples_per_group=5,
     groups=metadata["Type"],
+    min_per_group=5,
+    verbose=True,
 )
 
-
-pdf.log_text(f"- **After additional filtering**: {M_ready.shape[0]:,} CpGs remain")
+pdf.log_text(f"- **After filtering by group counts**: {M_ready.shape[0]:,} CpGs remain")
 
 elapsed = time.time() - start_time
 pdf.log_text(f"\n✔ Completed in {elapsed:.2f} seconds")
