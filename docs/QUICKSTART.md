@@ -7,7 +7,7 @@
 ```bash
 git clone https://github.com/dare-afolabi/methylation-engine.git
 cd methylation-engine
-pip install -r requirements.txt
+pip install .
 ```
 
 ### Run Demo Analysis
