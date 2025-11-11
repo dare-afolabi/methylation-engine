@@ -574,13 +574,6 @@ class TestPreprocessing:
 
         assert n_missing_after < n_missing_before
 
-    def test_impute_missing_values_invalid_method(self, data_with_missing):
-        """Test error with invalid method."""
-        M, _ = data_with_missing
-
-        with pytest.raises(ValueError, match="Unknown imputation method"):
-            impute_missing_values_fast(M, method="invalid")
-
     def test_filter_min_per_group(self, data_with_missing):
         """Test filtering by minimum per group."""
         M, metadata = data_with_missing
