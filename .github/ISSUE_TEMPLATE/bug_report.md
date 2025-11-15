@@ -19,7 +19,7 @@ Please include a minimal reproducible snippet:
 
 ```bash
 import pandas as pd
-from core.engine import fit_differential
+from methylation_engine.core.engine import fit_differential
 
 # Example setup
 M = pd.DataFrame(…)
@@ -54,7 +54,7 @@ Please provide:
 - **OS**: \[e.g. macOS 14, Ubuntu 22.04, Windows 11]
 - **EDI/Console**: \[e.g. VS Code]
 - **Python version**: \[e.g. 3.11]
-- **methylation-engine version**: \[e.g. 0.1.1]
+- **methylation-engine version**: \[e.g. 0.2.0]
 - **Installation method**: \[e.g. `pip install .`, `pip install -e .`]
 
 ---

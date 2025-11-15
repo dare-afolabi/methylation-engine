@@ -2,16 +2,14 @@
 # coding: utf-8
 
 """
-Comprehensive test suite for differential methylation analysis engine
-Target: 100% code coverage
+Test suite for the differential methylation analysis `engine` module.
 
-Run with:
-    pytest tests/test_engine.py -v --cov=core.engine --cov-report=html
+The tests are designed to achieve ≥ 80% coverage of `core.engine`.
+
+Usage:
+    pytest -v --cov=core.engine --cov-report=html
 """
 
-# import os
-# import tempfile
-# import warnings
 from io import StringIO
 from unittest.mock import patch
 
@@ -19,7 +17,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from core.engine import (
+from methylation_engine.core.engine import (
     PDFLogger,
     _add_group_means,
     _estimate_smyth_prior,
@@ -493,7 +491,7 @@ class TestChunkedProcessing:
         """Test handling of chunk failure."""
         M, design = large_data
 
-        with patch("core.engine.fit_differential") as mock_fit:
+        with patch("methylation_engine.core.engine.fit_differential") as mock_fit:
             # First chunk succeeds, second fails, third succeeds
             mock_fit.side_effect = [
                 pd.DataFrame({"logFC": [1], "pval": [0.01]}, index=["cg00000000"]),
@@ -517,7 +515,10 @@ class TestChunkedProcessing:
         """Test error when all chunks fail."""
         M, _, design = simple_data
 
-        with patch("core.engine.fit_differential", side_effect=Exception("All fail")):
+        with patch(
+            "methylation_engine.core.engine.fit_differential",
+            side_effect=Exception("All fail"),
+        ):
             with pytest.raises(ValueError, match="All chunks failed to process"):
                 fit_differential_chunked(M, design, chunk_size=50, verbose=False)
 

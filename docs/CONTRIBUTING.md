@@ -1,573 +1,509 @@
 # Contributing Guide
 
-Thank you for considering contributing to the Differential Methylation Pipeline! This document provides guidelines for contributing.
+Thank you for considering contributing to the Differential Methylation Analysis Pipeline. This document provides guidelines for contributing
 
------
+## Quick Start
 
-## Ways to Contribute
+1. **Fork and clone**
+```bash
+git clone https://github.com/dare-afolabi/methylation-engine.git
+cd methylation-engine
+```
 
-### 1. Report Bugs
+2. **Create branch**
 
-- Use [GitHub Issues](https://github.com/dare-afolabi/methylation-engine/issues)
-- Include minimal reproducible example
-- Specify Python version and dependencies
+```bash
+git checkout -b feature/my-feature
+```
 
-### 2. Suggest Features
+3. **Install dev dependencies**
 
-- Open a [Discussion](https://github.com/discussions/) first
-- Explain use case and benefits
-- Consider implementation complexity
+```bash
+pip install -e ".[dev]"
+```
 
-### 3. Improve Documentation
+4. **Make changes and test**
 
-- Fix typos or unclear sections
-- Add examples or tutorials
-- Translate documentation
+```bash
+pytest tests/
+```
 
-### 4. Submit Code
-
-- Bug fixes
-- New features
-- Performance improvements
-- Test coverage
-
------
+5. **Submit PR**
 
 ## Development Setup
 
-### 1. Fork and Clone
+### Requirements
 
-```bash
-# Fork on GitHub, then:
-git clone https://github.com/YOUR_USERNAME/methylation-engine.git
-cd methylation-engine
-git remote add upstream https://github.com/dare-afolabi/methylation-engine.git
+- Python 3.9+
+- Git
+- pytest, isort, black, flake8, mypy (installed via `pip install -e ".[dev]"`)
+
+### Project Structure
+
+```
+methylation-engine/
+├── core/
+│   ├── __init__.py
+│   ├── config.py       # Platform/design database
+│   ├── planner.py      # Study planning functions
+│   └── engine.py       # Statistical analysis
+├── demos/
+│   ├── planner_demo.py # Planning workflow
+│   └── engine_demo.py  # Analysis workflow
+├── tests/
+│   ├── test_planner.py
+│   └── test_engine.py
+└── docs/
+    ├── PLANNING.md
+    ├── ANALYSIS.md
+    ├── CONTRIBUTING.md
+    ├── CODE_OF_CONDUCT.md
+    └── TROUBLESHOOTING.md
 ```
 
-### 2. Create Environment
+## What to Contribute
 
-```bash
-# Using conda
-conda create -n engine python=3.10
-conda activate engine
+### High Priority
 
-# Using venv
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+- **Bug fixes** - See [GitHub Issues](https://github.com/dare-afolabi/methylation-engine/issues)
+- **Documentation improvements** - Clarifications, examples
+- **Test coverage** - Expand unit tests
+- **Performance optimizations** - Faster algorithms
 
-### 3. Install Development Dependencies
+### Features
 
-```bash
-pip install -e ".[dev]"  # includes pytest, black, etc.
-```
+- **New platforms** - Add to `config.py`
+- **Additional study designs** - Extend planning module
+- **Visualization enhancements** - New diagnostic plots
+- **File format support** - Import/export formats
+- **More**
 
-### 4. Install Pre-commit Hooks
+### Not Accepting
 
-```bash
-pip install pre-commit
-pre-commit install
-```
-
------
+- Features that increase complexity without clear benefit
+- Code that duplicates existing functionality
 
 ## Code Standards
 
 ### Style Guide
 
-**Follow PEP 8** with these specifics:
+- **PEP 8** for Python code
+- **Black** for formatting (line length 88)
+- **Type hints** for public functions
+- **Docstrings** in NumPy format
 
-- Line length: 88 characters (Black default)
-- Use type hints for function signatures
-- Docstrings in NumPy style
-
-**Example**:
+### Example Function
 
 ```python
-def fit_differential(
-    M: pd.DataFrame,
-    design: pd.DataFrame,
-    contrast: Optional[np.ndarray] = None,
-    shrink: Union[str, float] = "auto"
-) -> pd.DataFrame:
+def calculate_power(
+    n_per_group: int,
+    effect_size: float,
+    alpha: float = 0.05,
+    paired: bool = False
+) -> float:
     """
-    Fit linear models with empirical Bayes shrinkage.
+    Calculate statistical power.
     
     Parameters
     ----------
-    M : pd.DataFrame
-        CpG x samples matrix of M-values
-    design : pd.DataFrame
-        Design matrix (samples x covariates)
-    contrast : np.ndarray, optional
-        Contrast vector for testing
-    shrink : str or float
-        Shrinkage method
-        
+    n_per_group : int
+        Sample size per group
+    effect_size : float
+        Expected effect (M-value units)
+    alpha : float
+        Significance level
+    paired : bool
+        Whether design is paired
+    
     Returns
     -------
-    pd.DataFrame
-        Results with columns: logFC, t, pval, padj, etc.
-        
+    float
+        Power (0-1)
+    
     Examples
     --------
-    >>> M = pd.DataFrame(np.random.randn(100, 10))
-    >>> design = pd.DataFrame({'group': [0]*5 + [1]*5})
-    >>> res = fit_differential(M, design, contrast=np.array([0, 1]))
+    >>> calculate_power(12, 1.5, alpha=0.05)
+    0.82
     """
     # Implementation
+    pass
 ```
 
 ### Formatting
 
-Use **Black** for code formatting:
-
 ```bash
-black core/ tests/
-```
-
-Use **isort** for import sorting:
-
-```bash
+# Lint imports
 isort core/ tests/
-```
 
-### Linting
+# Auto-format code
+black core/ tests/
 
-```bash
+# Check lint style
 flake8 core/ tests/
+
+# Type check
 mypy core/
 ```
 
------
-
 ## Testing
 
-### Writing Tests
-
-Place tests in `tests/` directory:
-
-```python
-# tests/test_engine.py
-import numpy as np
-import pandas as pd
-import pytest
-from core.engine import fit_differential
-
-def test_fit_differential_basic():
-    """Test basic two-group comparison"""
-    # Setup
-    M = pd.DataFrame(
-        np.random.randn(100, 10),
-        index=[f'cg{i:08d}' for i in range(100)],
-        columns=[f'S{i}' for i in range(10)]
-    )
-    design = pd.DataFrame({
-        'Intercept': 1,
-        'Group': [0]*5 + [1]*5
-    }, index=M.columns)
-    
-    # Execute
-    results = fit_differential(
-        M, design,
-        contrast=np.array([0, 1]),
-        shrink='none'
-    )
-    
-    # Assert
-    assert 'logFC' in results.columns
-    assert 'pval' in results.columns
-    assert len(results) == 100
-    assert results['pval'].min() >= 0
-    assert results['pval'].max() <= 1
-
-
-def test_fit_differential_with_missing():
-    """Test handling of missing data"""
-    M = pd.DataFrame(np.random.randn(50, 8))
-    M.iloc[0:10, 0:2] = np.nan  # Add missing
-    
-    design = pd.DataFrame({
-        'Intercept': 1,
-        'Group': [0]*4 + [1]*4
-    }, index=M.columns)
-    
-    results = fit_differential(
-        M, design,
-        contrast=np.array([0, 1]),
-        min_count=3
-    )
-    
-    assert len(results) <= 50  # Some may be filtered
-    assert results['n_obs'].min() >= 3
-
-
-def test_fit_differential_invalid_design():
-    """Test that invalid design raises error"""
-    M = pd.DataFrame(np.random.randn(10, 5))
-    design = pd.DataFrame({
-        'Intercept': 1,
-        'Group': [0, 1, 2]  # Wrong length!
-    })
-    
-    with pytest.raises(ValueError, match="design rows"):
-        fit_differential(M, design, contrast=np.array([0, 1]))
-```
-
-### Running Tests
+### Run Tests
 
 ```bash
 # All tests
 pytest
 
+# Specific module
+pytest tests/test_planner.py
+
 # With coverage
 pytest --cov=core --cov-report=html
-
-# Specific test file
-pytest tests/test_engine.py
-
-# Specific test
-pytest tests/test_engine.py::test_fit_differential_basic
-
-# Verbose
-pytest -v
 ```
 
-### Test Coverage Goals
-
-- **Core functions: >90%
-- **Utilities: >80%
-- **Visualization: >60%
-
------
-
-## Pull Request Process
-
-### 1. Create Feature Branch
-
-```bash
-git checkout -b feature/my-new-feature
-# or
-git checkout -b fix/bug-description
-```
-
-### 2. Make Changes
-
-- Write code
-- Add tests
-- Update documentation
-- Run tests locally
-
-### 3. Commit Changes
-
-Use conventional commits:
-
-```bash
-git commit -m "feat: add support for paired samples"
-git commit -m "fix: correct p-value calculation in F-test"
-git commit -m "docs: update quickstart guide"
-git commit -m "test: add tests for missing data handling"
-```
-
-**Commit types:**
-
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation only
-- `style`: Formatting, no code change
-- `refactor`: Code restructure, no behavior change
-- `test`: Adding tests
-- `perf`: Performance improvement
-
-### 4. Push and Create PR
-
-```bash
-git push origin feature/my-new-feature
-```
-
-Then open Pull Request on GitHub.
-
-### 5. PR Checklist
-
-- [ ] Tests pass locally
-- [ ] New tests added for new features
-- [ ] Documentation updated
-- [ ] Code formatted with Black
-- [ ] No linting errors
-- [ ] CHANGELOG.md updated (for features/fixes)
-- [ ] Linked to relevant issue
-
-### 6. Review Process
-
-- Maintainers will review within 1 week
-- Address feedback in new commits
-- Once approved, maintainer will merge
-
------
-
-## Code Review Guidelines
-
-### For Authors
-
-- Keep PRs focused and small (<500 lines)
-- Write clear PR description
-- Respond to feedback promptly
-- Don’t force-push after review starts
-
-### For Reviewers
-
-- Be constructive and specific
-- Suggest improvements, don’t demand perfection
-- Approve if code is correct and maintainable
-- Nitpicks should be marked as such
-
-**Review checklist:**
-
-- [ ] Code is correct and handles edge cases
-- [ ] Tests are comprehensive
-- [ ] Documentation is clear
-- [ ] Performance is acceptable
-- [ ] Style follows guidelines
-
------
-
-## Adding New Features
-
-### Typical Workflow
-
-1. **Discuss first** - Open issue/discussion
-1. **Design** - Consider API, edge cases, tests
-1. **Implement** - Write code incrementally
-1. **Test** - Comprehensive test coverage
-1. **Document** - Docstrings, README, examples
-1. **Submit PR** - Follow checklist above
-
-### Example: Adding New Shrinkage Method
+### Writing Tests
 
 ```python
-# 1. Add to fit_differential
-def fit_differential(
-    M: pd.DataFrame,
-    design: pd.DataFrame,
-    shrink: Union[str, float] = "auto",
-    ...
-):
-    # ... existing code ...
-    
-    # Add new option
-    elif shrink == "empirical_bayes_v2":
-        d0, s0sq = _estimate_eb_v2(s2, df_resid)
-        s2_post = (df_resid * s2 + d0 * s0sq) / (df_resid + d0)
-        df_total = df_resid + d0
-    
-    # ... rest of code ...
+# tests/test_calculate_power.py
+import pytest
+import numpy as np
+from methylation_engine.core.planner import calculate_power
 
-
-# 2. Implement helper function
-def _estimate_eb_v2(
-    s2: np.ndarray,
-    df_resid: float
-) -> Tuple[float, float]:
-    """
-    Estimate prior using new EB method.
-    
-    Parameters
-    ----------
-    s2 : np.ndarray
-        Raw variances
-    df_resid : float
-        Residual df
-        
-    Returns
-    -------
-    Tuple[float, float]
-        (d0, s0_squared)
-        
-    References
-    ----------
-    Author et al. (2025). Journal. DOI: xxx
-    """
-    # Implementation
-    pass
-
-
-# 3. Add tests
-def test_fit_differential_eb_v2():
-    """Test new EB shrinkage method"""
-    M = pd.DataFrame(np.random.randn(100, 10))
-    design = pd.DataFrame({'Group': [0]*5 + [1]*5})
-    
-    results = fit_differential(
-        M, design,
-        contrast=np.array([0, 1]),
-        shrink='empirical_bayes_v2'
+def test_calculate_power_basic():
+    """Test power calculation with known values."""
+    power = calculate_power(
+        n_per_group=12,
+        effect_size=1.5,
+        alpha=0.05
     )
-    
-    assert 'd0' in results.columns
-    assert results['d0'].iloc[0] > 0
+    assert 0.7 < power < 0.9
 
+def test_calculate_power_paired():
+    """Paired designs should need fewer samples."""
+    power_unpaired = calculate_power(12, 1.5, paired=False)
+    power_paired = calculate_power(12, 1.5, paired=True)
+    assert power_paired > power_unpaired
 
-# 4. Update documentation
-# - Add to README
-# - Update docstring
-# - Add to CHANGELOG
+def test_calculate_power_invalid_input():
+    """Test error handling."""
+    with pytest.raises(ValueError):
+        calculate_power(n_per_group=0, effect_size=1.5)
 ```
 
------
+### Test Requirements
+
+- **Unit tests** for all public functions
+- **Integration tests** for workflows
+- **Edge cases** (empty data, invalid inputs)
+- **Performance tests** for large datasets (optional)
 
 ## Documentation
 
 ### Docstring Format
 
-Use **NumPy style**:
+Use **NumPy style** docstrings:
 
 ```python
-def function(param1: int, param2: str = "default") -> bool:
+def function_name(param1, param2):
     """
-    Short one-line description.
+    Short description (one line).
     
-    Longer description explaining what the function does,
-    when to use it, and any important details.
+    Longer description if needed. Can span
+    multiple paragraphs.
     
     Parameters
     ----------
-    param1 : int
+    param1 : type
         Description of param1
-    param2 : str, optional
-        Description of param2 (default: "default")
-        
+    param2 : type, optional
+        Description of param2 (default: value)
+    
     Returns
     -------
-    bool
+    return_type
         Description of return value
-        
+    
     Raises
     ------
     ValueError
-        If param1 is negative
-        
+        When param1 is invalid
+    
     Examples
     --------
-    >>> result = function(5, "test")
-    >>> print(result)
-    True
+    >>> function_name(1, 2)
+    3
     
     Notes
     -----
-    Additional implementation notes or mathematical details.
+    Additional implementation details.
     
     References
     ----------
-    .. [1] Author et al. (2020). Title. Journal.
+    [1] Author et al. (2024). Paper title. Journal.
     """
 ```
 
-### README Updates
+### User Documentation
 
 When adding features, update:
 
-- Feature list
-- Usage examples
-- API reference
+- **PLANNING.md** or **ANALYSIS.md** - Add usage examples
+- **TROUBLESHOOTING.md** - Add common issues (if applicable)
 
-### CHANGELOG
+Keep docs **concise** - prefer examples over lengthy explanations.
 
-Follow [Keep a Changelog](https://keepachangelog.com/):
+## Pull Request Process
+
+### Before Submitting
+
+- [ ] Code follows style guide (`isort`, `black`, `flake8`, `mypy`)
+- [ ] Tests pass (`pytest`)
+- [ ] New functions have docstrings
+- [ ] User docs updated (if needed)
+- [ ] Commit messages are clear
+
+### PR Template
 
 ```markdown
-## [Unreleased]
+## Description
+Brief description of changes.
 
-### Added
-- New shrinkage method `empirical_bayes_v2`
-- Support for paired sample designs
+## Type of Change
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Documentation update
+- [ ] Performance improvement
 
-### Changed
-- Improved performance of chunked processing (2x faster)
+## Testing
+- [ ] Unit tests added/updated
+- [ ] All tests pass
+- [ ] Tested on example data
 
-### Fixed
-- Correct p-value calculation for F-tests with missing data
+## Checklist
+- [ ] Code formatted (black)
+- [ ] Docstrings added
+- [ ] Documentation updated
+- [ ] No breaking changes (or discussed in issue)
 
-### Deprecated
-- `old_function()` will be removed in v2.0
-
-## [0.1.0] - 2025-01-11
-
-### Added
-- Initial release
+## Related Issues
+Closes #123
 ```
+
+### Review Process
+
+1. **Automated checks** - CI runs tests, style checks
+2. **Maintainer review** - Code quality, design
+3. **Revisions** - Address feedback
+4. **Merge** - Squash commits to keep history clean
 
 -----
 
-## Performance Optimization
+## Commit Messages
+
+### Format
+
+```
+type(scope): brief description
+
+Longer explanation if needed.
+
+Fixes #123
+```
+
+### Types
+
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation only
+- `style`: Code formatting (no logic change)
+- `refactor`: Code restructuring
+- `test`: Test updates
+- `perf`: Performance improvement
+
+### Examples
+
+```
+feat(planner): add factorial design support
+
+Add factorial design configuration and power adjustment
+factor to config.py. Update plan_sample_size() to handle
+2-way factorial designs.
+
+Closes #45
+
+---
+
+fix(engine): correct group mean calculation in chunked analysis
+
+Previously, chunked analysis failed to add group means when
+using subset of M. Now passes full M matrix to ensure all
+result CpGs are present.
+
+Fixes #67
+
+---
+
+docs(planning): add timeline estimation examples
+
+Add code examples for estimate_timeline() to PLANNING.md.
+Include examples of optional phase control and batch
+adjustments.
+```
+
+## Adding New Platforms
+
+To add a new methylation platform:
+
+### 1. Add to `config.py`
+
+```python
+DEFAULT_PLATFORMS = {
+    # ... existing platforms ...
+    'NewArray': {
+        'name': 'New Methylation Array',
+        'manufacturer': 'Company',
+        'n_cpgs': 1000000,
+        'cost_per_sample': 550,
+        'processing_days': 7,
+        'dna_required_ng': 200,
+        'coverage': 'Enhanced',
+        'release_year': 2025,
+        'status': 'Current',
+        'recommended': True,
+        'notes': 'Description of platform'
+    }
+}
+```
+
+### 2. Update Documentation
+
+- Add to comparison tables in `PLANNING.md`
+- Update platform list in `README.md`
+
+### 3. Add Test
+
+```python
+def test_new_platform():
+    from methylation_engine.core.config import get_config
+    config = get_config()
+    platform = config.get_platform('NewArray')
+    assert platform['n_cpgs'] == 1000000
+    assert platform['cost_per_sample'] == 550
+```
+
+## Adding New Study Designs
+
+To add a new study design:
+
+### 1. Add to `config.py`
+
+```python
+DEFAULT_DESIGNS = {
+    # ... existing designs ...
+    'new_design': {
+        'name': 'New Design Name',
+        'description': 'Description of design',
+        'n_groups': 2,  # or more
+        'paired': False,
+        'complexity': 'Simple',  # or 'Moderate', 'Complex'
+        'min_n_recommended': 12,
+        'power_adjustment': 1.0,  # Adjust based on efficiency
+        'analysis_method': 'Statistical method used',
+        'example_uses': ['Use case 1', 'Use case 2']
+    }
+}
+```
+
+### 2. Update Planning Functions
+
+Ensure `plan_sample_size()` handles the new design correctly.
+
+### 3. Add Tests
+
+```python
+def test_new_design():
+    from methylation_engine.core.planner import plan_sample_size
+    result = plan_sample_size(
+        expected_delta_beta=0.10,
+        design_type='new_design'
+    )
+    assert result['recommended']['n_per_group'] > 0
+```
+
+### 4. Update Documentation
+
+- Add to design comparison tables
+- Add example to `PLANNING.md`
+
+## Performance Guidelines
+
+### Optimization Priorities
+
+1. **Correctness first** - Never sacrifice accuracy for speed
+2. **Profile before optimizing** - Measure, don’t guess
+3. **Vectorize operations** - Use NumPy/pandas operations
+4. **Minimize copies** - Avoid unnecessary data duplication
 
 ### Benchmarking
 
-Before optimizing:
-
 ```python
 import time
-import cProfile
+import numpy as np
 
-def benchmark():
+def benchmark_function():
+    """Time a function with large input."""
+    M = np.random.randn(100000, 20)
+    
     start = time.time()
-    result = fit_differential(M, design, ...)
+    result = my_function(M)
     elapsed = time.time() - start
+    
     print(f"Time: {elapsed:.2f}s")
-    print(f"Rate: {len(result)/elapsed:.0f} CpGs/sec")
-
-# Profile hotspots
-cProfile.run('benchmark()', sort='cumtime')
+    print(f"Rate: {len(M)/elapsed:.0f} CpGs/sec")
 ```
 
-### Guidelines
+### Performance Tests
 
-1. **Profile first** - Don’t guess at bottlenecks
-1. **Vectorize** - Use NumPy operations
-1. **Reduce copies** - Modify in-place when safe
-1. **Cache results** - Avoid redundant computation
-1. **Benchmark** - Measure improvement
-
-**Example optimization**:
+Add performance tests for large datasets:
 
 ```python
-# Before (slow)
-for i in range(n):
-    result[i] = np.exp(array[i]) / (1 + np.exp(array[i]))
-
-# After (fast)
-result = np.exp(array) / (1 + np.exp(array))
-# or even better:
-result = 1 / (1 + np.exp(-array))  # numerically stable
+@pytest.mark.slow
+def test_chunked_analysis_performance():
+    """Ensure chunked method handles 450K arrays in <5 min."""
+    M = generate_large_dataset(450000, 20)
+    
+    start = time.time()
+    results = fit_differential_chunked(M, design, chunk_size=50000)
+    elapsed = time.time() - start
+    
+    assert elapsed < 300  # 5 minutes
+    assert len(results) > 0
 ```
-
------
 
 ## Release Process
 
-For maintainers:
+Maintainers only:
 
-1. Update version in `setup.py`
-1. Update [CHANGELOG.md](https://github.com/dare-afolabi/methylation-engine/blob/main/CHANGELOG.md)
-1. Create git tag: `git tag v0.0.2`
-1. Push tag: `git push origin v0.0.2`
-1. Create GitHub release
-1. Build and upload to PyPI (if applicable)
+1. **Update version** in `core/__init__.py`
+2. **Update CHANGELOG.md**
+3. **Tag release**
+
+```bash
+git tag -a v0.2.1 -m "Release v0.2.1"
+git push origin v0.2.1
+```
+
+1. **GitHub Release** - Auto-generates from tag
+2. **PyPI upload** (if/when published)
 
 -----
 
 ## Questions?
 
-- **Email**: [dare-afolabi@outlook.com](dare-afolabi@outlook.com)
-- **GitHub Discussions**: Ask questions
-
------
-
-## Code of Conduct
-
-Be respectful, inclusive, and professional. See [CODE_OF_CONDUCT.md](https://github.com/dare-afolabi/methylation-engine/blob/main/docs/CODE_OF_CONDUCT.md) for details.
-
------
+- **General questions**: [GitHub Discussions](https://github.com/dare-afolabi/methylation-engine/discussions/4)
+- **Bug reports**: [GitHub Issues](https://github.com/dare-afolabi/methylation-engine/issues)
+- **Feature requests**: [GitHub Issues](https://github.com/dare-afolabi/methylation-engine/issues)
+- **Security issues**: Email [dare.afolabi@outlook.com](mailto:dare.afolabi@outlook.com) privately
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the same MIT License that covers the project.
+By contributing, you agree your contributions will be licensed under the MIT License.

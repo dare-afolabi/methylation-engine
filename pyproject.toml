@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "methylation-engine"
-version = "0.1.0"
-description = "Differential methylation analysis engine"
+version = "0.2.0"
+description = "Pipeline for DNA methylation study planning and analysis"
 readme = "README.md"
 requires-python = ">=3.9"
 authors = [
@@ -26,8 +26,8 @@ dependencies = [
   "statsmodels>=0.13.0,<0.15.0",
   "scikit-learn>=1.0.0,<2.0.0",
   "matplotlib>=3.4.0,<4.0.0",
-  "seaborn>=0.11.0,<0.14.0",
   "reportlab>=3.6.0,<5.0.0",
+  "openpyxl>=3.0.0",
 ]
 
 # Optional / dev dependencies
@@ -43,14 +43,17 @@ dev = [
   # "joblib>=1.1.0",  # Optional parallel processing
 ]
 
-[tool.setuptools.packages.find]
-where = ["core"]
+[tool.setuptools]
+package-dir = { "" = "." }
+packages = { find = { where = ["."] } }
 
 [tool.mypy]
 ignore_missing_imports = true
 strict_optional = true
 warn_unused_ignores = true
 warn_redundant_casts = true
+namespace_packages = true
+explicit_package_bases = true
 
 [tool.black]
 line-length = 88

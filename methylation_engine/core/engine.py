@@ -44,7 +44,7 @@ def validate_design(design: pd.DataFrame, M: pd.DataFrame) -> None:
     """Validate design matrix against data."""
     if not isinstance(design, pd.DataFrame):
         raise TypeError("design must be a pandas DataFrame")
-    
+
     if design.shape[1] >= design.shape[0]:
         raise ValueError(
             f"Too many covariates ({design.shape[1]}) for sample\
@@ -65,7 +65,6 @@ def validate_design(design: pd.DataFrame, M: pd.DataFrame) -> None:
     if (design.dtypes == object).any():
         non_numeric = design.select_dtypes(include=[object]).columns.tolist()
         raise ValueError(f"design contains non-numeric columns: {non_numeric}")
-
 
 
 def validate_contrast(contrast: np.ndarray, design: pd.DataFrame) -> None:
@@ -626,6 +625,7 @@ def fit_differential_chunked(
 # DATA PREPROCESSING
 # ============================================================================
 
+
 def filter_cpgs_by_missingness(
     M: pd.DataFrame,
     max_missing_rate: float = 0.2,
@@ -654,7 +654,7 @@ def filter_cpgs_by_missingness(
     # Convert to numpy for speed
     M_values = M.values
     n_cpgs, n_samples = M_values.shape
-    
+
     # Vectorized: missing rate filter
     n_missing = np.isnan(M_values).sum(axis=1)
     keep = (n_missing / n_samples) <= max_missing_rate
@@ -664,34 +664,31 @@ def filter_cpgs_by_missingness(
             raise ValueError(
                 "`groups` must be provided if `min_samples_per_group` is specified."
             )
-        
+
         # Align groups with M columns
         groups_aligned = groups.loc[M.columns].values
-        
+
         # Get unique groups and create masks
         unique_groups = np.unique(groups_aligned)
-        
+
         # Pre-compute non-missing mask (boolean array)
         not_missing = ~np.isnan(M_values)
-        
+
         # Vectorized group filtering
         for group in unique_groups:
             group_indices = np.where(groups_aligned == group)[0]
             # Count non-missing in this group for all CpGs at once
             n_present = not_missing[:, group_indices].sum(axis=1)
-            keep &= (n_present >= min_samples_per_group)
+            keep &= n_present >= min_samples_per_group
 
     filtered_M = M[keep]
     n_filtered = int((~keep).sum())
     n_retained = int(keep.sum())
     return filtered_M, n_filtered, n_retained
-    
+
 
 def impute_missing_values_fast(
-    M: pd.DataFrame,
-    method: str = "mean",
-    k: int = 5,
-    use_sample_knn: bool = False
+    M: pd.DataFrame, method: str = "mean", k: int = 5, use_sample_knn: bool = False
 ) -> pd.DataFrame:
     """
     Fast imputation for methylation matrices (CpGs x samples).
@@ -720,7 +717,7 @@ def impute_missing_values_fast(
             fill_values = np.nanmean(M_copy.values, axis=1)
         else:
             fill_values = np.nanmedian(M_copy.values, axis=1)
-        
+
         # Broadcast fill_values to match shape and fill NaNs
         mask = np.isnan(M_copy.values)
         M_copy.values[mask] = np.take(fill_values, np.where(mask)[0])
@@ -769,23 +766,23 @@ def filter_min_per_group(
         Subset of M that passes the filter
     """
     groups = groups.loc[M.columns]
-    
+
     # Create boolean mask of non-missing values
     not_missing = ~M.isna()
-    
+
     # Count non-missing values per group for each CpG
     # This is vectorized across all CpGs at once
     counts_per_group = {}
     for group_label in groups.unique():
         group_mask = groups == group_label
         counts_per_group[group_label] = not_missing.loc[:, group_mask].sum(axis=1)
-    
+
     # Convert to DataFrame for easy filtering
     counts_df = pd.DataFrame(counts_per_group)
-    
+
     # Keep CpGs where ALL groups have >= min_per_group observations
     keep_mask = (counts_df >= min_per_group).all(axis=1)
-    
+
     if verbose:
         n_kept = keep_mask.sum()
         n_removed = len(M) - n_kept
@@ -793,7 +790,7 @@ def filter_min_per_group(
             f"filter_min_per_group: kept {n_kept:,} / {len(M):,} "
             f"CpGs (removed {n_removed:,} with <{min_per_group} obs per group)"
         )
-    
+
     return M.loc[keep_mask]
 
 
@@ -1262,8 +1259,7 @@ class PDFLogger:
     def _format_md(self, text: str) -> str:
         """Basic Markdown formatting: bold, italics, inline code"""
         text = re.sub(r"\*\*(.*?)\*\*", r"<b>\1</b>", text)
-        text = re.sub(r'\*([^*]+)\*', r'<i>\1</i>', text)
-        text = re.sub(r'_([^_]+)_', r'<i>\1</i>', text)
+        text = re.sub(r"\*([^*]+)\*", r"<i>\1</i>", text)
         text = re.sub(r"`(.*?)`", r"<font name='Courier'>\1</font>", text)
         return text
 

@@ -14,7 +14,7 @@ import pandas as pd
 from scipy import stats
 
 # Assuming discovery.py contains all functions
-from core.engine import (
+from methylation_engine.core.engine import (
     filter_cpgs_by_missingness,
     impute_missing_values_fast,
     filter_min_per_group,
@@ -38,7 +38,7 @@ from core.engine import (
 
 CONFIG = {
     "random_seed": 1500,
-    "n_cpg": 500000,  # Large dataset for chunking demo
+    "n_cpg": 100000,  # Large dataset for chunking demo
     "n_normal": 12,
     "n_tumor": 12,
     "effect_size": 1.5,  # M value +/- effect_size
@@ -774,7 +774,7 @@ else:
 print("\n" + "=" * 70)
 print("ANALYSIS COMPLETE!")
 print("=" * 70)
-print(f"Total time: {total_time:.1f}s ({total_time/60:.1f} minutes)")
+print(f"Total runtime: {total_time:.1f}s ({total_time/60:.1f} minutes)")
 print(f"Results saved to: {report_path}/")
 print(f"PDF report: {report_path}/report.pdf")
 
