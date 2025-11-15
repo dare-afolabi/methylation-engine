@@ -158,7 +158,9 @@ def sample_size_for_power(
     result = max_n
     while low <= high:
         mid = (low + high) // 2
-        power = calculate_power(mid, effect_size, alpha, variance, prior_df, paired=paired)
+        power = calculate_power(
+            mid, effect_size, alpha, variance, prior_df, paired=paired
+        )
         if power >= target_power:
             result = mid
             high = mid - 1
@@ -207,7 +209,9 @@ def detectable_effect_size(
     tolerance = 0.005
     while high - low > tolerance:
         mid = (low + high) / 2
-        power = calculate_power(n_per_group, mid, alpha, variance, prior_df, paired=paired)
+        power = calculate_power(
+            n_per_group, mid, alpha, variance, prior_df, paired=paired
+        )
         if power >= target_power:
             high = mid
         else:
@@ -268,13 +272,11 @@ def plan_sample_size(
 
     # Convert delta-beta to effect size if needed
     if expected_delta_beta is not None and expected_effect_size is None:
-        if not (isinstance(
-            expected_delta_beta,
-            (int, float)
-        ) and 0 < expected_delta_beta < 1):
-            raise ValueError(
-                "expected_delta_beta must be a number in the range (0, 1)"
-            )
+        if not (
+            isinstance(expected_delta_beta, (int, float))
+            and 0 < expected_delta_beta < 1
+        ):
+            raise ValueError("expected_delta_beta must be a number in the range (0, 1)")
         expected_effect_size = delta_beta_to_delta_m(expected_delta_beta)
     elif expected_effect_size is None:
         raise ValueError(
@@ -299,14 +301,20 @@ def plan_sample_size(
     max_iter = 100
     for _ in range(max_iter):
         power_check = calculate_power(
-            n_recommended, expected_effect_size, alpha, variance, prior_df, paired=paired
+            n_recommended,
+            expected_effect_size,
+            alpha,
+            variance,
+            prior_df,
+            paired=paired,
         )
         if power_check >= target_power:
             break
         n_recommended += 1
     else:
         raise RuntimeError(
-            f"Failed to achieve target power ({target_power:.0%}) after {max_iter} adjustments. "
+            f"Failed to achieve target power ({target_power:.0%})\
+             after {max_iter} adjustments. "
             "Check configuration (power_adjustment, min_n_recommended) or effect size."
         )
 
@@ -886,6 +894,7 @@ def plot_power_curves(
     plt.close()
 
     return fig
+
 
 # ============================================================================
 # COMPREHENSIVE STUDY PLAN

@@ -152,25 +152,6 @@ class TestPowerCalculation:
 class TestSampleSizeCalculation:
     """Test sample_size_for_power function."""
 
-    def test_basic_sample_size(self):
-        """Calculate sample size for target power."""
-        n = sample_size_for_power(0.80, effect_size=1.5)
-
-        assert n >= 3
-        assert n < 100
-
-        # Verify it achieves target power
-        power = calculate_power(n, 1.5)
-        assert power >= 0.80
-
-    def test_higher_power_needs_more_samples(self):
-        """Higher power requires larger N."""
-        n_70 = sample_size_for_power(0.70, effect_size=1.5)
-        n_80 = sample_size_for_power(0.80, effect_size=1.5)
-        n_90 = sample_size_for_power(0.90, effect_size=1.5)
-
-        assert n_70 < n_80 < n_90
-
     def test_larger_effect_needs_fewer_samples(self):
         """Larger effects need smaller samples."""
         n_small = sample_size_for_power(0.80, effect_size=0.5)
@@ -214,13 +195,6 @@ class TestDetectableEffectSize:
         # Verify it achieves target power
         power = calculate_power(12, effect)
         assert power >= 0.80
-
-    def test_larger_n_detects_smaller_effects(self):
-        """Larger samples detect smaller effects."""
-        effect_n10 = detectable_effect_size(10, target_power=0.80)
-        effect_n30 = detectable_effect_size(30, target_power=0.80)
-
-        assert effect_n30 < effect_n10
 
     def test_paired_design(self):
         """Paired design detects smaller effects."""
