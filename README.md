@@ -222,6 +222,7 @@ methylation-engine/
 │   └── engine_demo.py  # Analysis workflow
 └── tests/
     ├── test_planner.py
+    ├── test_config.py
     └── test_engine.py
 ```
 
@@ -247,7 +248,7 @@ methylation-engine/
 ## Support
 
 - **Issues**: [GitHub Issues](https://github.com/dare-afolabi/methylation-engine/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/dare-afolabi/methylation-engine/discussions/4)
+- **Discussions**: [GitHub Discussions](https://github.com/dare-afolabi/methylation-engine/discussions/5)
 - **Email**: [dare.afolabi@outlook.com](mailto:dare.afolabi@outlook.com)
 
 ## Contributing

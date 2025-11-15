@@ -52,6 +52,7 @@ methylation-engine/
 │   └── engine_demo.py  # Analysis workflow
 ├── tests/
 │   ├── test_planner.py
+│   ├── test_config.py
 │   └── test_engine.py
 └── docs/
     ├── PLANNING.md
@@ -499,7 +500,7 @@ git push origin v0.2.1
 
 ## Questions?
 
-- **General questions**: [GitHub Discussions](https://github.com/dare-afolabi/methylation-engine/discussions/4)
+- **General questions**: [GitHub Discussions](https://github.com/dare-afolabi/methylation-engine/discussions/5)
 - **Bug reports**: [GitHub Issues](https://github.com/dare-afolabi/methylation-engine/issues)
 - **Feature requests**: [GitHub Issues](https://github.com/dare-afolabi/methylation-engine/issues)
 - **Security issues**: Email [dare.afolabi@outlook.com](mailto:dare.afolabi@outlook.com) privately

@@ -493,5 +493,5 @@ design = pd.DataFrame({'Intercept': 1, 'Group': [0]*10 + [1]*10})
 ### Contact
 
 - **Issues**: [GitHub Issues](https://github.com/dare-afolabi/methylation-engine/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/dare-afolabi/methylation-engine/discussions/4)
+- **Discussions**: [GitHub Discussions](https://github.com/dare-afolabi/methylation-engine/discussions/5)
 - **Email**: [dare.afolabi@outlook.com](mailto:dare.afolabi@outlook.com)
