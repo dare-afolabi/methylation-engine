@@ -140,16 +140,16 @@ See demos for complete sample workflows:
 - **Analysis**: `demos/engine_demo.py`
 
 ## Performance
-- **Study Planning**: < placeholder for complete workflow including visualization
+- **Study Planning**: < 2 seconds for complete workflow including visualization
 
-- **Analysis Benchmarks (16GB RAM, 4-core CPU)**:
+- **Analysis Benchmarks (16GB RAM, 4-core CPU) - Complete workflow including visualizations**:
 
 | Dataset | CpGs | Samples | Time | Rate |
 |---------|------|---------|------|------|
-| Small | 10K | 24 | placeholder | 5K/s |
-| Medium | 100K | 24 | placeholder | 4K/s |
-| 450K Array | 450K | 24 | placeholder | 3.2K/s |
-| EPIC Array | 850K | 24 | placeholder | 2.4K/s |
+| Small | 10K | 24 | 10.8 sec | 0.9K/s |
+| Medium | 100K | 24 | 34.7 sec | 2.9K/s |
+| 450K Array | 450K | 24 | 2.3 min | 3.2K/s |
+| EPIC Array | 850K | 24 | 4.1 min  | 3.4K/s |
 
 *See demo outputs for timings on your hardware*
 
